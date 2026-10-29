@@ -61,6 +61,7 @@ Existing parsers (iso8583parser.com, neapay, iso8583.info) parse one clean messa
 6. Hosting: GitHub Pages (free), custom subdomain iso.loiphoto.site
 7. Encoding: their real NAPAS logs are ASCII-encoded (MTI appears as `30 32 30 30`, numerics as ASCII digits) — verified against real dumps
 8. Field coverage: their real messages use only standard ISO 8583:1987 public data elements (no private DEs 65–128, no private subfields) — verified against real dumps
+9. Test fixtures: synthetic only — the owner chose not to share real dumps, even sanitized; the builder creates synthetic samples in the common dump formats
 
 ## How it gets made (builder's calls)
 
@@ -77,9 +78,13 @@ Existing parsers (iso8583parser.com, neapay, iso8583.info) parse one clean messa
 The pasted text goes through a cleaner before any parsing:
 
 1. Strip address/offset prefixes per line (e.g. `0000  `, `0000:`)
-2. Strip trailing ASCII gutter columns (the printable-text column after a wide gap)
-3. Remove whitespace; keep hex digits only (tolerate `0x` prefixes)
-4. Keep the cleaned byte stream while the hex panel still renders faithfully against the source
+2. Strip trailing ASCII gutter columns (the printable-text column after a wide gap, as in `hexdump -C`)
+3. Strip log-line decorations: timestamps, log levels, and SEND/RECV-style markers around the hex payload
+4. Remove whitespace; keep hex digits only (tolerate `0x` prefixes)
+5. Keep the cleaned byte stream while the hex panel still renders faithfully against the source
+
+Supported dump shapes (all covered by synthetic fixtures — no real dumps used):
+`hexdump -C` style (offset, 16 bytes per row, ASCII gutter), `xxd` style, and application-log lines (timestamp + label + hex on one line).
 
 ### Message splitting
 
@@ -122,7 +127,7 @@ Parse input embedded in the URL fragment so a copied link reproduces a decode (l
 
 ### Testing strategy
 
-- Unit tests (`node:test`): input cleaner, message splitter, bitmap walker, field decoder (ASCII/BCD/EBCDIC), code-table lookups, with hand-built message vectors including a request+response pair and a noisy hex dump
+- Unit tests (`node:test`): input cleaner, message splitter, bitmap walker, field decoder (ASCII/BCD/EBCDIC), code-table lookups, with hand-built message vectors including a request+response pair and a noisy hex dump in each supported dump shape
 - Golden vectors stay in-repo (synthetic data only — no real PANs, ever)
 
 ### Deployment
