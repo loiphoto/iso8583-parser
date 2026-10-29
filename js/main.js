@@ -5,6 +5,9 @@ import { splitMessages } from "./parser/splitter.js";
 import { parseMessage } from "./parser/decode.js";
 import { maskPan, amountChipText, fieldColor, buildSummary } from "./ui.js";
 import { setLang, getLang, t } from "./i18n.js";
+import { encodeShare, decodeShare } from "./share.js";
+import { mergeFields, validateCustomFields, loadCustomDict, saveCustomDict } from "./custom-dict.js";
+import { FIELDS } from "./data/fields.mjs";
 import { SAMPLE_DUMP } from "../test/vectors.mjs";
 
 const $ = (sel) => document.querySelector(sel);
@@ -12,7 +15,10 @@ const input = $("#input");
 const messagesEl = $("#messages");
 const errorEl = $("#error");
 const encodingEl = $("#encoding");
+const toastEl = $("#toast");
 let encoding = "ascii";
+let customFields = null;
+let toastTimer = null;
 
 const KIND_KEYS = {
   request: "msg.request",
@@ -40,6 +46,13 @@ function showError(key) {
 function hideError() {
   errorEl.classList.remove("show");
   errorEl.textContent = "";
+}
+
+function showToast(text) {
+  toastEl.textContent = text;
+  toastEl.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2200);
 }
 
 function localize(meaning) {
@@ -207,7 +220,7 @@ function attachHover(section) {
 }
 
 function renderMessage(m) {
-  const r = parseMessage(m.hex, { encoding });
+  const r = parseMessage(m.hex, { encoding, customFields });
   const section = document.createElement("section");
   section.className = "msg";
 
@@ -274,10 +287,62 @@ $("#lang-toggle").addEventListener("click", () => {
   if (input.value) parseAll();
 });
 
+$("#share").addEventListener("click", () => {
+  if (!input.value) return;
+  const enc = encodeShare(input.value);
+  try {
+    history.replaceState(null, "", `#d=${enc}`);
+  } catch {
+    /* file:// or sandboxed context — the hash just won't update */
+  }
+  const url = `${location.origin}${location.pathname}${location.search}#d=${enc}`;
+  try {
+    navigator.clipboard
+      .writeText(url)
+      .then(() => showToast(t("copied")))
+      .catch(() => showToast(url));
+  } catch {
+    showToast(url); // clipboard unavailable — show the link to copy by hand
+  }
+});
+
+$("#dict").addEventListener("click", () => $("#dict-file").click());
+$("#dict-file").addEventListener("change", async () => {
+  const file = $("#dict-file").files[0];
+  $("#dict-file").value = ""; // allow re-picking the same file
+  if (!file) return;
+  let overlay = null;
+  try {
+    overlay = JSON.parse(await file.text());
+  } catch {
+    showError("dict.invalid");
+    return;
+  }
+  const check = validateCustomFields(overlay);
+  if (!check.ok) {
+    showError("dict.invalid");
+    return;
+  }
+  customFields = mergeFields(FIELDS, overlay);
+  saveCustomDict(localStorage, overlay);
+  showToast(t("dict.loaded"));
+  if (input.value) parseAll();
+});
+
 try {
-  const saved = localStorage.getItem("lang");
-  if (saved === "vi" || saved === "en") setLang(saved);
+  const savedLang = localStorage.getItem("lang");
+  if (savedLang === "vi" || savedLang === "en") setLang(savedLang);
+  const savedDict = loadCustomDict(localStorage);
+  if (savedDict) customFields = mergeFields(FIELDS, savedDict);
 } catch {
-  /* storage unavailable — default English */
+  /* storage unavailable — defaults: English, no overlay */
 }
 applyLang();
+
+if (location.hash.startsWith("#d=")) {
+  const shared = decodeShare(location.hash.slice(3));
+  if (shared !== null) {
+    input.value = shared;
+    parseAll();
+  }
+}

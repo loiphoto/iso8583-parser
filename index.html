@@ -24,6 +24,8 @@
     <button id="sample" type="button" data-i18n="sample">Load sample</button>
     <button id="clear" type="button" data-i18n="clear">Clear</button>
     <button id="share" type="button" data-i18n="share">Copy link</button>
+    <button id="dict" type="button" data-i18n="dict.load">Load custom dictionary</button>
+    <input id="dict-file" type="file" accept=".json,application/json" hidden>
     <label class="enc" for="encoding"><span data-i18n="enc">Encoding</span>
       <select id="encoding">
         <option value="ascii" selected>ASCII</option>
@@ -34,6 +36,7 @@
   </div>
   <div id="error" role="alert"></div>
   <div id="messages"></div>
+  <div id="toast" role="status"></div>
 </main>
 <footer><p data-i18n="footer.privacy">100% client-side — messages never leave your browser</p></footer>
 <script type="module" src="js/main.js"></script>

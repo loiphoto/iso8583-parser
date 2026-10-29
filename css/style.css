@@ -104,6 +104,26 @@ textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
 }
 #error.show { display: block; }
 
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%) translateY(8px);
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: .9rem;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease, transform .2s ease;
+  max-width: min(90vw, 560px);
+  overflow-wrap: anywhere;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
 .msg {
   background: var(--card);
   border: 1px solid var(--border);

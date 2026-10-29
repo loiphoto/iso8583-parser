@@ -29,6 +29,7 @@ export const LANGS = {
     "err.uncertain": "Truncated or inconsistent data",
     "dict.load": "Load custom dictionary",
     "dict.loaded": "Custom dictionary loaded",
+    "dict.invalid": "Invalid dictionary — nothing loaded",
     "footer.privacy": "100% client-side — messages never leave your browser",
   },
   vi: {
@@ -60,6 +61,7 @@ export const LANGS = {
     "err.uncertain": "Dữ liệu bị cắt cụt hoặc không nhất quán",
     "dict.load": "Nạp từ điển riêng",
     "dict.loaded": "Đã nạp từ điển riêng",
+    "dict.invalid": "Từ điển không hợp lệ — chưa nạp gì",
     "footer.privacy": "Xử lý 100% tại trình duyệt — dữ liệu không rời khỏi máy bạn",
   },
 };
