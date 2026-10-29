@@ -29,6 +29,7 @@ function messageRecord(hex, start, messageStart, end) {
   const r = parseMessage(hexSlice);
   return {
     startByte: start,
+    messageStart,
     endByte: end - 1,
     mti: r.mti,
     kind: r.kind,
@@ -44,8 +45,14 @@ export function splitMessages(hex, opts = {}) {
     .filter((s) => Number.isInteger(s) && s >= 0 && s < total);
   if (manualStarts.length) {
     const starts = [...new Set(manualStarts)].sort((a, b) => a - b);
-    return starts.map((s, k) =>
-      messageRecord(hex, s, s, k + 1 < starts.length ? starts[k + 1] : total));
+    return starts.map((s, k) => {
+      const next = k + 1 < starts.length ? starts[k + 1] : total;
+      // Cut at the first clean end, not blindly at the next start: in a
+      // framed dump the bytes between two MTIs include the next frame's
+      // length header + TPDU, which do not belong to either message body.
+      const end = findEnd(hex, next, s);
+      return messageRecord(hex, s, s, end === null ? next : end);
+    });
   }
 
   const candidates = [];
@@ -84,7 +91,17 @@ export function splitMessages(hex, opts = {}) {
   }
 
   if (!chosen.length) {
-    return [{ startByte: 0, endByte: total - 1, mti: null, kind: "unknown", hex, ok: false }];
+    return [{ startByte: 0, messageStart: 0, endByte: total - 1, mti: null, kind: "unknown", hex, ok: false }];
   }
   return chosen.map((c) => messageRecord(hex, c.start, c.messageStart, c.end));
+}
+
+// Manual "message starts here" override: re-split with `offset` as a hard
+// boundary, keeping the automatic boundaries around it. Out-of-range or
+// non-integer offsets leave the automatic split untouched.
+export function resplitAt(hex, offset) {
+  const total = hex.length / 2;
+  if (!Number.isInteger(offset) || offset < 0 || offset >= total) return splitMessages(hex);
+  const auto = splitMessages(hex).map((m) => m.messageStart);
+  return splitMessages(hex, { manualStarts: [offset, ...auto] });
 }

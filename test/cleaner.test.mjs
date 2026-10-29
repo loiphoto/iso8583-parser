@@ -25,6 +25,16 @@ test("app log: timestamp and SEND label dropped, message kept", () => {
   assert.equal(normalizeHexDump(line), "00B1600003000030323030");
 });
 
+test("app log: continuous hex run after label is kept", () => {
+  const line = "2026-10-29 14:52:30 INFO SEND: 00B160000300003030323030";
+  assert.equal(normalizeHexDump(line), "00B160000300003030323030");
+});
+
+test("0x-prefixed hex tokens are stripped", () => {
+  assert.equal(normalizeHexDump("0x00 0xB1 0x60 0x00"), "00B16000");
+  assert.equal(normalizeHexDump("0x00B16000"), "00B16000");
+});
+
 test("single-line spaced hex", () => {
   assert.equal(normalizeHexDump("00 B1 60 00"), "00B16000");
 });

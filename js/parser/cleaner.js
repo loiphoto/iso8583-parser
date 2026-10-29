@@ -5,8 +5,9 @@
 // 1. Offset-prefixed line (hexdump/xxd): drop the offset token, then take
 //    consecutive 2- or 4-hex-char byte groups until a non-hex token (the
 //    gutter column always breaks the run).
-// 2. Otherwise: longest run of exactly-2-hex-char tokens, length >= 2;
-//    anything else (timestamps, words, separators) breaks the run.
+// 2. Otherwise: longest run of even-length hex tokens (2+ chars, optional
+//    leading 0x/0X stripped); anything else (timestamps, words, separators)
+//    breaks the run.
 // 3. Join; drop a final odd nibble.
 
 const HEX_ONLY = /^[0-9a-fA-F]+$/;
@@ -35,7 +36,8 @@ export function normalizeHexDump(text) {
     let best = "";
     let cur = "";
     for (const tok of tokens) {
-      if (BYTE2.test(tok)) cur += tok;
+      const norm = tok.replace(/^0[xX]/, "");
+      if (HEX_ONLY.test(norm) && norm.length >= 2 && norm.length % 2 === 0) cur += norm;
       else {
         if (cur.length > best.length) best = cur;
         cur = "";

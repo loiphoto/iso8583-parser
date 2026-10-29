@@ -185,6 +185,8 @@ textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
 .hex-row { display: flex; gap: 2px; padding: 1px 0; white-space: nowrap; }
 .hex-off { color: var(--muted); margin-right: 10px; min-width: 4ch; user-select: none; }
 .b { border-radius: 3px; padding: 0 1px; cursor: default; }
+.b[data-off] { cursor: pointer; }
+.b[data-off]:hover { box-shadow: inset 0 0 0 1px var(--accent); }
 .b.neutral { color: var(--muted); }
 .b.pad { color: transparent; }
 .hex-row .b:nth-child(10) { margin-left: 8px; }

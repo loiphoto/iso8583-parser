@@ -1,7 +1,7 @@
 // Page wiring: input → clean → split → decode → layout B rendering.
 // Pure formatting lives in ui.js/i18n.js; this file only touches the DOM.
 import { normalizeHexDump } from "./parser/cleaner.js";
-import { splitMessages } from "./parser/splitter.js";
+import { splitMessages, resplitAt } from "./parser/splitter.js";
 import { parseMessage } from "./parser/decode.js";
 import { maskPan, amountChipText, fieldColor, buildSummary } from "./ui.js";
 import { setLang, getLang, t } from "./i18n.js";
@@ -19,6 +19,7 @@ const toastEl = $("#toast");
 let encoding = "ascii";
 let customFields = null;
 let toastTimer = null;
+let cleanStream = ""; // cleaned hex of the last successful parse
 
 const KIND_KEYS = {
   request: "msg.request",
@@ -135,6 +136,8 @@ function buildHexPanel(r, m) {
         sp.textContent = "  ";
       } else {
         sp.textContent = m.hex.substr(b * 2, 2).toUpperCase();
+        sp.dataset.off = String(m.messageStart + b);
+        sp.title = t("hex.clickStart");
         const de = byteDe[b];
         if (de !== null) {
           sp.dataset.de = String(de);
@@ -246,21 +249,31 @@ function renderMessage(m) {
   return section;
 }
 
-function parseAll() {
-  const clean = normalizeHexDump(input.value);
-  if (!clean) {
-    messagesEl.replaceChildren();
-    showError("err.empty");
-    return;
-  }
-  hideError();
-  const msgs = splitMessages(clean);
+function renderMessages(msgs) {
   const frag = document.createDocumentFragment();
   for (const m of msgs) frag.appendChild(renderMessage(m));
   messagesEl.replaceChildren(frag);
 }
 
+function parseAll() {
+  const clean = normalizeHexDump(input.value);
+  if (!clean) {
+    cleanStream = "";
+    messagesEl.replaceChildren();
+    showError("err.empty");
+    return;
+  }
+  hideError();
+  cleanStream = clean;
+  renderMessages(splitMessages(clean));
+}
+
 $("#parse").addEventListener("click", parseAll);
+messagesEl.addEventListener("click", (e) => {
+  const el = e.target.closest(".b[data-off]");
+  if (!el || !cleanStream) return;
+  renderMessages(resplitAt(cleanStream, Number(el.dataset.off)));
+});
 $("#sample").addEventListener("click", () => {
   input.value = SAMPLE_DUMP;
   parseAll();
