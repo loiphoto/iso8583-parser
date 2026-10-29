@@ -32,6 +32,7 @@ export const LANGS = {
     "dict.loaded": "Custom dictionary loaded",
     "dict.invalid": "Invalid dictionary — nothing loaded",
     "footer.privacy": "100% client-side — messages never leave your browser",
+    "footer.source": "Source code",
   },
   vi: {
     title: "Trình phân tích ISO 8583",
@@ -65,6 +66,7 @@ export const LANGS = {
     "dict.loaded": "Đã nạp từ điển riêng",
     "dict.invalid": "Từ điển không hợp lệ — chưa nạp gì",
     "footer.privacy": "Xử lý 100% tại trình duyệt — dữ liệu không rời khỏi máy bạn",
+    "footer.source": "Mã nguồn",
   },
 };
 
