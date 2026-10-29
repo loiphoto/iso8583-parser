@@ -1,10 +1,12 @@
 // Zero-dependency static dev server: node scripts/serve.mjs
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
-import { extname, join, normalize, sep } from "node:path";
+import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const root = normalize(fileURLToPath(new URL("..", import.meta.url))) + sep;
+// normalize() keeps a trailing separator on Windows, so no + sep here —
+// a doubled "\\" breaks the startsWith() traversal guard below.
+const root = normalize(fileURLToPath(new URL("..", import.meta.url)));
 const port = Number(process.env.PORT || 8000);
 const mime = {
   ".html": "text/html; charset=utf-8",

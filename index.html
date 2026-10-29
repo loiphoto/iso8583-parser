@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ISO 8583 Parser</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='1' width='14' height='14' rx='2.5' fill='%234f46e5'/%3E%3Crect x='3' y='4' width='10' height='2' rx='.5' fill='%23fff'/%3E%3Crect x='3' y='8' width='7' height='2' rx='.5' fill='%23fff'/%3E%3Crect x='3' y='12' width='4' height='1' rx='.5' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div>
+      <h1 data-i18n="title">ISO 8583 Parser</h1>
+      <p class="tagline" data-i18n="tagline">Paste a hex dump from your logs — offsets, spaces and all</p>
+    </div>
+    <button id="lang-toggle" type="button">Tiếng Việt</button>
+  </div>
+</header>
+<main>
+  <textarea id="input" data-i18n-ph="placeholder" spellcheck="false" aria-label="Hex dump input"></textarea>
+  <div class="toolbar">
+    <button id="parse" type="button" class="primary" data-i18n="parse">Parse</button>
+    <button id="sample" type="button" data-i18n="sample">Load sample</button>
+    <button id="clear" type="button" data-i18n="clear">Clear</button>
+    <button id="share" type="button" data-i18n="share">Copy link</button>
+    <label class="enc" for="encoding"><span data-i18n="enc">Encoding</span>
+      <select id="encoding">
+        <option value="ascii" selected>ASCII</option>
+        <option value="bcd">BCD</option>
+        <option value="ebcdic">EBCDIC</option>
+      </select>
+    </label>
+  </div>
+  <div id="error" role="alert"></div>
+  <div id="messages"></div>
+</main>
+<footer><p data-i18n="footer.privacy">100% client-side — messages never leave your browser</p></footer>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
