@@ -59,6 +59,8 @@ Existing parsers (iso8583parser.com, neapay, iso8583.info) parse one clean messa
 4. UI language: bilingual, English default + Vietnamese toggle
 5. Result layout: B — hex and field list side by side with hover sync
 6. Hosting: GitHub Pages (free), custom subdomain iso.loiphoto.site
+7. Encoding: their real NAPAS logs are ASCII-encoded (MTI appears as `30 32 30 30`, numerics as ASCII digits) — verified against real dumps
+8. Field coverage: their real messages use only standard ISO 8583:1987 public data elements (no private DEs 65–128, no private subfields) — verified against real dumps
 
 ## How it gets made (builder's calls)
 
@@ -95,14 +97,15 @@ Every candidate boundary must survive validation: parse the bitmap, consume the 
 
 - Locate MTI (4 numeric chars), read primary bitmap (8 bytes); if bit 1 is set, read the secondary bitmap (8 more bytes)
 - For each present field, look up its format in the dictionary: fixed length or LLVAR/LLLVAR, content type (n numeric, an alphanumeric, ans, b binary, z track)
-- Encoding selector: ASCII (default) / Hex-BCD / EBCDIC; numeric fields interpreted per encoding; DE 4 amount = minor units, decimal point placed using the ISO 4217 exponent from DE 49
+- Encoding: **ASCII by default** — the owner's real logs are ASCII-encoded (verified), so numerics are ASCII digits, not packed BCD. The dictionary can override per field (e.g. DE 52 binary is shown as raw hex), and an advanced manual selector (Hex-BCD / EBCDIC) exists as a fallback for non-NAPAS messages. No global choice is required on first use.
+- DE 4 amount = minor units, decimal point placed using the ISO 4217 exponent from DE 49
 - On any inconsistency (length mismatch, non-numeric MTI, trailing bytes), mark the offending field and the tail as uncertain — never silently relabel
 
 ### Field dictionary & code tables (data files)
 
 - `fields.json`: ISO 8583:1987 DE 1–128 — name (en/vi), format, length; public-standard definitions
 - Code tables: MTI meanings, DE 3 processing codes, DE 39 response codes, DE 49 currency codes (ISO 4217, incl. NAPAS 704 = VND)
-- **Extensibility**: an optional `napas-custom.json` overlay (empty in the public repo) lets the owner load private/non-public definitions locally without committing them — keeps confidential material out of the public product
+- **Extensibility**: an optional `napas-custom.json` overlay (empty in the public repo) lets the owner load private/non-public definitions locally without committing them. Not launch-critical — the owner's real dumps use only standard public DEs (verified) — but a "Load custom dictionary" button (file picker + localStorage) ships in v1 anyway: it is cheap, and it guarantees private data never enters the deploy artifact.
 
 ### UI (layout B)
 
